@@ -29,7 +29,14 @@ export const createApp = (): Koa => {
   app.use(requestLogger);
   app.use(metricsMiddleware);
   app.use(rateLimiter);
-  app.use(helmet());
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        // Allow cdnjs for swagger-ui scripts (koa2-swagger-ui loads from CDN)
+        scriptSrc: ["'self'", 'https://cdnjs.cloudflare.com'],
+      },
+    },
+  }));
   app.use(cors({ credentials: true }));
   app.use(bodyParser({ jsonLimit: '5mb' }));
 
