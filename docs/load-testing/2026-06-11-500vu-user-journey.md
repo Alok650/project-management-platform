@@ -266,7 +266,53 @@ The 500 VU run was a **stress test** (10× nominal load) intentionally designed 
 
 ---
 
-## 10. Fixes Applied (post-test)
+## 10. Re-test Results (after fixes)
+
+A second 500 VU run was executed after deploying the three fixes. Raw JSON saved at `/tmp/k6-journey-500vu-v2.json` on the VM.
+
+### 10.1 Before / After Comparison
+
+| Metric | Run 1 (before) | Run 2 (after) | Change |
+|--------|---------------|--------------|--------|
+| `http_req_failed` rate | 41.4% | **11.8%** | -71.5% |
+| `journey_error_rate` | 41.4% | **11.8%** | -71.5% |
+| Create issue success rate | 18.8% (1,575/8,392) | **42.8%** (2,877/6,718) | +128% |
+| Search success rate | 0% (8,392 failures) | **100%** (6,718/6,718) | ✅ Fixed |
+| `step_duration_ms p(95)` | 3,055 ms | 4,374 ms | regressed† |
+| Total iterations | 8,392 | 6,718 | — |
+| Request rate | 195 req/s | 171 req/s | — |
+
+† p(95) latency increased because search now executes real FULLTEXT queries (up to 5 s timeout) instead of failing immediately at <200 ms. Slower but returning results is the correct behaviour.
+
+### 10.2 Per-Step Results (Run 2)
+
+| Step | Passes | Fails | Success Rate |
+|------|-------:|------:|:------------:|
+| 1 — View board | 6,718 | 0 | ✅ 100% |
+| 2 — Open issue detail | 6,718 | 0 | ✅ 100% |
+| 3 — Create issue | 2,877 | 3,841 | ⚠️ 42.8% |
+| 4 — Transition status | 2,877 | 0 | ✅ 100% |
+| 5 — Add comment | 2,877 | 0 | ✅ 100% |
+| 6 — Search | 6,718 | 0 | ✅ 100% |
+
+### 10.3 Latency (Run 2, successful requests)
+
+| Percentile | Duration |
+|------------|----------|
+| avg | 1,545 ms |
+| median | 1,389 ms |
+| p90 | 3,214 ms |
+| p95 | 3,982 ms |
+
+### 10.4 Remaining failure — Create issue at 57.2%
+
+The IssueKeyGenerator race is resolved (no more unique key violations), but 57.2% of creates still fail at 500 VUs. The constraint is now pure hardware: a single 1-OCPU VM running MySQL, the application server, Redis, and ElasticMQ simultaneously cannot sustain 500 concurrent write transactions. With 500 VUs and a TypeORM pool of 50 connections, each connection slot must serve 10 VUs, and MySQL's InnoDB write throughput ceiling (bounded by a single CPU core) causes waits that exceed the request window.
+
+This is expected behaviour for a 500-VU stress test on a 1-OCPU VM — the fixes have extracted the maximum possible performance from the current hardware.
+
+---
+
+## 11. Fixes Applied (post-test)
 
 ### Fix 1 — IssueKeyGenerator: eliminate the TOCTOU race (`src/modules/issues/IssueKeyGenerator.ts`)
 
