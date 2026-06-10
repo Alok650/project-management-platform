@@ -31,7 +31,7 @@ services:
     ports: ["9324:9324", "9325:9325"]
     volumes: ["./elasticmq.conf:/opt/elasticmq.conf"]
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:9325 || exit 1"]
+      test: ["CMD-SHELL", "bash -c '>/dev/tcp/localhost/9324' 2>/dev/null"]
       interval: 5s
       timeout: 5s
       retries: 5
