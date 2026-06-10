@@ -71,6 +71,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Compute lowercase image name
+        id: image
+        run: echo "repo=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       - name: Copy docker-compose.production.yml to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -85,30 +89,36 @@ jobs:
         env:
           IMAGE_TAG: sha-${{ github.sha }}
           DEPLOY_DIR: ${{ secrets.DEPLOY_DIR }}
+          REPO_LC: ${{ steps.image.outputs.repo }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_ACTOR: ${{ github.actor }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
-          envs: IMAGE_TAG,DEPLOY_DIR
+          envs: IMAGE_TAG,DEPLOY_DIR,REPO_LC,GH_TOKEN,GH_ACTOR
           script: |
             set -euo pipefail
             cd "$DEPLOY_DIR"
 
             # Pull the new image
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker pull ghcr.io/${{ github.repository }}:$IMAGE_TAG
+            echo "$GH_TOKEN" | docker login ghcr.io -u "$GH_ACTOR" --password-stdin
+            docker pull ghcr.io/$REPO_LC:$IMAGE_TAG
 
             # Run pending migrations before bringing up new containers
+            # --network app_default connects this container to the Compose stack so
+            # it can resolve the 'mysql' service hostname from .env
             docker run --rm --env-file .env \
+              --network app_default \
               -e NODE_ENV=production \
-              ghcr.io/${{ github.repository }}:$IMAGE_TAG \
+              ghcr.io/$REPO_LC:$IMAGE_TAG \
               node -e "
                 const { AppDataSource } = require('./dist/config/database');
                 AppDataSource.initialize().then(() => AppDataSource.runMigrations()).then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1); });
               "
 
             # Zero-downtime restart: bring up new container, let health-check pass, remove old
-            APP_IMAGE=ghcr.io/${{ github.repository }}:$IMAGE_TAG \
+            APP_IMAGE=ghcr.io/$REPO_LC:$IMAGE_TAG \
               docker compose -f docker-compose.production.yml up -d --no-deps --wait app
 
             # Clean up dangling images
