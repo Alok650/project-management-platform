@@ -17,7 +17,7 @@ readonly DB_NAME: string;
   readonly AWS_ENDPOINT?: string;
   readonly AWS_ACCESS_KEY_ID: string;
   readonly AWS_SECRET_ACCESS_KEY: string;
-  readonly SQS_NOTIFICATION_QUEUE_URL: string;
+  readonly SQS_NOTIFICATION_QUEUE_URL?: string;
   readonly LOG_LEVEL: 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace';
 }
 
@@ -36,10 +36,10 @@ const schema = Joi.object<Env>({
   JWT_SECRET: Joi.string().min(32).required(),
   JWT_EXPIRES_IN: Joi.string().default('7d'),
   AWS_REGION: Joi.string().default('us-east-1'),
-  AWS_ENDPOINT: Joi.string().uri().optional(),
+  AWS_ENDPOINT: Joi.string().uri().optional().allow(''),
   AWS_ACCESS_KEY_ID: Joi.string().required(),
   AWS_SECRET_ACCESS_KEY: Joi.string().required(),
-  SQS_NOTIFICATION_QUEUE_URL: Joi.string().required(),
+  SQS_NOTIFICATION_QUEUE_URL: Joi.string().uri().optional().allow(''),
   LOG_LEVEL: Joi.string()
     .valid('fatal', 'error', 'warn', 'info', 'debug', 'trace')
     .default('info'),
