@@ -81,7 +81,7 @@ jobs:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
-          source: docker-compose.production.yml,.env.example
+          source: docker-compose.production.yml,.env.example,elasticmq.conf
           target: ${{ secrets.DEPLOY_DIR }}
 
       - name: Pull image + run migrations + restart service

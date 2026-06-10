@@ -44,10 +44,12 @@ export const createApp = (): Koa => {
       },
       security: [{ bearerAuth: [] }],
     },
-    apis: ['./src/modules/**/routes/**/*.ts'],
+    // Resolve route files relative to this module so the glob works both in
+    // dev (.ts under src/) and in the compiled production image (.js under dist/).
+    apis: [`${__dirname}/modules/**/routes/**/*.${__filename.endsWith('.ts') ? 'ts' : 'js'}`],
   });
 
-  app.use(koaSwagger({ routePrefix: '/docs', swaggerOptions: { spec: swaggerSpec as Record<string, unknown> } }));
+  app.use(koaSwagger({ routePrefix: '/', swaggerOptions: { spec: swaggerSpec as Record<string, unknown> } }));
 
   const apiRouter = new Router({ prefix: '/api/v1' });
   apiRouter.use(authRouter.routes());
