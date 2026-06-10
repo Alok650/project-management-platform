@@ -2,6 +2,7 @@ import pLimit from 'p-limit';
 import { CommentRepository } from './CommentRepository';
 import { MentionParser } from './MentionParser';
 import { IssueRepository } from '../issues/IssueRepository';
+import { UserRepository } from '../auth/UserRepository';
 import { eventBus } from '../../core/events/DomainEventBus';
 import { NotFoundError, ForbiddenError } from '../../core/errors/errors';
 import type { CommentAddedEvent } from '../../core/events/events';
@@ -11,6 +12,8 @@ import { CORE_CONSTANTS } from '../../core/constants';
 
 /** Business logic for comment creation, threading, and updates */
 export class CommentService {
+  private readonly userRepo = new UserRepository();
+
   constructor(
     private readonly repo:       CommentRepository,
     private readonly issueRepo:  IssueRepository,
@@ -41,7 +44,8 @@ export class CommentService {
       if (!parent) throw new NotFoundError('Comment', parentId);
     }
 
-    const mentions = MentionParser.extract(content);
+    const handles = MentionParser.extract(content);
+    const mentions = await this.userRepo.resolveHandles(handles);
     const comment = await this.repo.save({ issueId, authorId, content, parentId: parentId ?? null, mentions });
 
     eventBus.publish({
