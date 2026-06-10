@@ -4,8 +4,8 @@ import { logger } from '../../infrastructure/logger/Logger';
 
 const RATE_LIMIT_CONSTANTS = {
   WINDOW_SECONDS: 60,
-  MAX_REQUESTS:   100,
-} as const;
+  MAX_REQUESTS:   parseInt(process.env['RATE_LIMIT_MAX'] ?? '100', 10),
+};
 
 /**
  * Redis sliding-window rate limiter using a Sorted Set per client IP.
