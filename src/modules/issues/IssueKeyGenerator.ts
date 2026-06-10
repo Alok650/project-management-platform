@@ -11,15 +11,16 @@ export class IssueKeyGenerator {
    * @param projectKey - Short uppercase key (e.g. "PROJ")
    */
   async next(projectId: string, projectKey: string): Promise<string> {
+    // LAST_INSERT_ID(expr) stores expr as the connection-local last-insert-id.
+    // Reading it back via SELECT LAST_INSERT_ID() is therefore safe under any
+    // concurrency level — each connection sees only its own incremented value,
+    // preventing the TOCTOU race that causes duplicate issue keys.
     await AppDataSource.query(
-      `INSERT INTO issue_key_counters (project_id, counter) VALUES (?, 1)
-       ON DUPLICATE KEY UPDATE counter = counter + 1`,
+      `INSERT INTO issue_key_counters (project_id, counter) VALUES (?, LAST_INSERT_ID(1))
+       ON DUPLICATE KEY UPDATE counter = LAST_INSERT_ID(counter + 1)`,
       [projectId],
     );
-    const [row] = await AppDataSource.query(
-      `SELECT counter FROM issue_key_counters WHERE project_id = ?`,
-      [projectId],
-    );
+    const [row] = await AppDataSource.query(`SELECT LAST_INSERT_ID() AS counter`);
     return `${projectKey}-${(row as { counter: number }).counter}`;
   }
 }

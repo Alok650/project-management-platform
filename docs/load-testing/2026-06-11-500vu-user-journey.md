@@ -263,3 +263,65 @@ The default `user-journey.js` is calibrated for **50 VUs** — the thresholds (`
 - Search: expected >95% success (FULLTEXT not under write lock contention)
 
 The 500 VU run was a **stress test** (10× nominal load) intentionally designed to find the break point, not a pass/fail gate for production readiness.
+
+---
+
+## 10. Fixes Applied (post-test)
+
+### Fix 1 — IssueKeyGenerator: eliminate the TOCTOU race (`src/modules/issues/IssueKeyGenerator.ts`)
+
+**Root cause:** The original implementation executed two queries per key generation:
+
+```sql
+-- Step 1: increment counter (atomic)
+INSERT INTO issue_key_counters (project_id, counter) VALUES (?, 1)
+ON DUPLICATE KEY UPDATE counter = counter + 1
+
+-- Step 2: read the result (NOT atomic with step 1)
+SELECT counter FROM issue_key_counters WHERE project_id = ?
+```
+
+Under high concurrency, two connections can both complete step 1 and then both read the same counter value in step 2. Both then attempt to INSERT an issue with the same `issue_key` — one succeeds, one gets a unique constraint violation (HTTP 500).
+
+**Fix:** Use MySQL's `LAST_INSERT_ID(expr)` to store the incremented value as a connection-local variable, then read it back with `SELECT LAST_INSERT_ID()`. This is a standard MySQL pattern for concurrent sequence generation — each connection reads only what it wrote:
+
+```sql
+INSERT INTO issue_key_counters (project_id, counter) VALUES (?, LAST_INSERT_ID(1))
+ON DUPLICATE KEY UPDATE counter = LAST_INSERT_ID(counter + 1)
+
+SELECT LAST_INSERT_ID() AS counter
+```
+
+**Expected impact:** Issue creation success rate at 500 VUs should increase significantly. Each VU now always gets a unique issue key.
+
+---
+
+### Fix 2 — Search: graceful degradation under FULLTEXT write contention (`src/modules/search/SearchRepository.ts`)
+
+**Root cause:** MySQL FULLTEXT indexes use a shared lock during updates. When hundreds of concurrent INSERT transactions are in-flight, FULLTEXT search queries either timeout waiting for the lock or fail with `ER_LOCK_WAIT_TIMEOUT`. The unhandled exception propagated through the controller → global error handler → HTTP 500 for every single search request.
+
+**Fix:** Two changes:
+
+1. Added the `MAX_EXECUTION_TIME(5000)` MySQL 8.0 optimizer hint — the query self-terminates after 5 seconds rather than waiting indefinitely for the FULLTEXT lock. MySQL error 3024 (`ER_QUERY_TIMEOUT`) is raised instead of blocking.
+
+2. Wrapped the query in `try/catch` — any MySQL error (lock timeout, query timeout, connection pool exhaustion) now returns an empty result page (`{ items: [], nextCursor: null, hasMore: false }`) with HTTP 200, instead of a 500. Search degrades gracefully rather than failing hard.
+
+**Expected impact:** Search requests return 200 with empty results under extreme write load instead of 500. The endpoint remains functional; clients can retry or display "no results at this time."
+
+---
+
+### Fix 3 — MySQL: increase `max-connections` and add FULLTEXT cache tuning (`docker-compose.production.yml`)
+
+```yaml
+# Before
+--max-connections=200
+
+# After
+--max-connections=500
+--innodb-ft-result-cache-limit=2147483648
+```
+
+- `max-connections=500` matches the 500 VU peak load target. With `DB_POOL_MAX=50` (TypeORM pool per process), this leaves headroom for migrations, health checks, and future replica processes.
+- `innodb-ft-result-cache-limit=2147483648` (2 GB) sets the maximum memory for the InnoDB FULLTEXT index cache. Raising this reduces the frequency of cache flushes to disk, which is the write-path operation that blocks concurrent reads.
+
+**Note:** Apply on the VM with `docker compose -f docker-compose.production.yml up -d --no-deps mysql` after the next deploy. MySQL will respect `max-connections` from startup flags without a data-directory change.

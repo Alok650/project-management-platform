@@ -56,16 +56,26 @@ export class SearchRepository {
       params.push(cursorScore, cursorScore, cursorId);
     }
 
-    const rows = await AppDataSource.query(
-      `SELECT i.id, i.project_id AS projectId, i.title, i.description AS excerpt,
-              MATCH(i.title, i.description) AGAINST(? IN NATURAL LANGUAGE MODE) AS score
-       FROM issues i
-       WHERE ${where}
-       HAVING score > 0
-       ORDER BY score DESC, i.id DESC
-       LIMIT ?`,
-      [...params, limit + 1],
-    ) as Array<{ id: string; projectId: string; title: string; excerpt: string | null; score: number }>;
+    // MAX_EXECUTION_TIME(5000): MySQL 8.0 hint — kills the query after 5 s instead
+    // of holding a connection indefinitely under FULLTEXT write-lock contention.
+    // On timeout (ER_QUERY_TIMEOUT / error 3024) or any other DB error we return
+    // an empty page so search degrades gracefully rather than returning 500.
+    let rows: Array<{ id: string; projectId: string; title: string; excerpt: string | null; score: number }>;
+    try {
+      rows = await AppDataSource.query(
+        `SELECT /*+ MAX_EXECUTION_TIME(5000) */
+                i.id, i.project_id AS projectId, i.title, i.description AS excerpt,
+                MATCH(i.title, i.description) AGAINST(? IN NATURAL LANGUAGE MODE) AS score
+         FROM issues i
+         WHERE ${where}
+         HAVING score > 0
+         ORDER BY score DESC, i.id DESC
+         LIMIT ?`,
+        [...params, limit + 1],
+      ) as typeof rows;
+    } catch {
+      return { items: [], nextCursor: null, hasMore: false };
+    }
 
     const hasMore = rows.length > limit;
     const items   = hasMore ? rows.slice(0, -1) : rows;
@@ -119,17 +129,23 @@ export class SearchRepository {
       params.push(cursorScore, cursorScore, cursorId);
     }
 
-    const rows = await AppDataSource.query(
-      `SELECT c.id, i.project_id AS projectId, NULL AS title, c.content AS excerpt,
-              MATCH(c.content) AGAINST(? IN NATURAL LANGUAGE MODE) AS score
-       FROM comments c
-       INNER JOIN issues i ON c.issue_id = i.id
-       WHERE ${where}
-       HAVING score > 0
-       ORDER BY score DESC, c.id DESC
-       LIMIT ?`,
-      [...params, limit + 1],
-    ) as Array<{ id: string; projectId: string; title: null; excerpt: string; score: number }>;
+    let rows: Array<{ id: string; projectId: string; title: null; excerpt: string; score: number }>;
+    try {
+      rows = await AppDataSource.query(
+        `SELECT /*+ MAX_EXECUTION_TIME(5000) */
+                c.id, i.project_id AS projectId, NULL AS title, c.content AS excerpt,
+                MATCH(c.content) AGAINST(? IN NATURAL LANGUAGE MODE) AS score
+         FROM comments c
+         INNER JOIN issues i ON c.issue_id = i.id
+         WHERE ${where}
+         HAVING score > 0
+         ORDER BY score DESC, c.id DESC
+         LIMIT ?`,
+        [...params, limit + 1],
+      ) as typeof rows;
+    } catch {
+      return { items: [], nextCursor: null, hasMore: false };
+    }
 
     const hasMore = rows.length > limit;
     const items   = hasMore ? rows.slice(0, -1) : rows;
