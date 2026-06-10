@@ -70,16 +70,15 @@ export const createApp = (): Koa => {
 <body>
 <div id="swagger-ui"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/${SWAGGER_VERSION}/swagger-ui-bundle.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/${SWAGGER_VERSION}/swagger-ui-standalone-preset.js"></script>
 <script>
 window.onload = () => {
   SwaggerUIBundle({
     url: '/spec.json',
     dom_id: '#swagger-ui',
     deepLinking: true,
-    presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+    presets: [SwaggerUIBundle.presets.apis],
     plugins: [SwaggerUIBundle.plugins.DownloadUrl],
-    layout: 'StandaloneLayout',
+    layout: 'BaseLayout',
   });
 };
 </script>
