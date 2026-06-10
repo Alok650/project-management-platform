@@ -1,5 +1,3 @@
-version: '3.9'
-
 # Production compose file — run on the target host.
 # Requires a .env file in the same directory (copy from .env.example and fill values).
 #
