@@ -1,6 +1,6 @@
 # Product Management Platform
 
-A Jira-like project management platform built as an SDE-2 take-home assignment. Supports projects, sprints, issues with workflow transitions, threaded comments, real-time board updates via WebSocket, and an activity feed — all backed by a hexagonal, event-driven architecture.
+A Jira-like project management platform. Supports projects, sprints, issues with workflow transitions, threaded comments, real-time board updates via WebSocket, and an activity feed — all backed by a hexagonal, event-driven architecture.
 
 ---
 
