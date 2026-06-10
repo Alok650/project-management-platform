@@ -1,0 +1,19 @@
+# Dependencies & build
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs & coverage
+*.log
+coverage/
+
+# OS
+.DS_Store
+
+# Internal planning docs
+docs/superpowers/plans/
