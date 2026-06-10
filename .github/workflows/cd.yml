@@ -105,8 +105,10 @@ jobs:
             echo "$GH_TOKEN" | docker login ghcr.io -u "$GH_ACTOR" --password-stdin
             docker pull ghcr.io/$REPO_LC:$IMAGE_TAG
 
-            # Ensure infrastructure services are running (idempotent — won't restart healthy ones)
-            docker compose -f docker-compose.production.yml up -d mysql redis elasticmq
+            # Ensure infrastructure services are running and healthy before proceeding.
+            # --wait blocks until each service passes its healthcheck — required when MySQL
+            # is recreated due to config changes (e.g. max-connections flag update).
+            docker compose -f docker-compose.production.yml up -d --wait mysql redis elasticmq
 
             # Run pending migrations before bringing up new containers
             # --network app_default connects this container to the Compose stack so

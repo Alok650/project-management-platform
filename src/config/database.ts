@@ -20,7 +20,7 @@ export const AppDataSource = new DataSource({
   migrations: [process.env.NODE_ENV === 'production' ? 'dist/migrations/*.js' : 'src/migrations/*.ts'],
   extra: {
     connectionLimit: env.DB_POOL_MAX,
-    acquireTimeout: 30_000,
     waitForConnections: true,
+    queueLimit: 0,
   },
 });
