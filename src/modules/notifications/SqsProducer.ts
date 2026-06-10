@@ -26,6 +26,10 @@ const sqsClient = new SQSClient({
  * @param job - Notification payload to queue
  */
 export const enqueueNotification = async (job: NotificationJob): Promise<void> => {
+  if (!env.SQS_NOTIFICATION_QUEUE_URL) {
+    logger.warn({ notificationId: job.notificationId }, 'SQS_NOTIFICATION_QUEUE_URL not configured — notification dropped');
+    return;
+  }
   await sqsClient.send(new SendMessageCommand({
     QueueUrl:    env.SQS_NOTIFICATION_QUEUE_URL,
     MessageBody: JSON.stringify(job),

@@ -8,6 +8,8 @@ import { env } from './config/env';
 import { ActivityService } from './modules/activity/ActivityService';
 import { ActivityRepository } from './modules/activity/ActivityRepository';
 import { WebSocketService } from './modules/websocket/WebSocketService';
+import { NotificationService } from './modules/notifications/NotificationService';
+import { SqsConsumer } from './modules/notifications/SqsConsumer';
 
 /** Maximum milliseconds to wait for in-flight HTTP requests to drain on shutdown */
 const SHUTDOWN_DRAIN_TIMEOUT_MS = 30_000;
@@ -20,6 +22,13 @@ const bootstrap = async (): Promise<void> => {
 
   // Instantiate ActivityService so domain event subscriptions are registered at startup
   new ActivityService(new ActivityRepository());
+
+  // Instantiate NotificationService so domain event subscriptions are registered at startup
+  new NotificationService();
+
+  // Start SQS consumer only when the queue URL is configured
+  const sqsConsumer = env.SQS_NOTIFICATION_QUEUE_URL ? new SqsConsumer() : null;
+  sqsConsumer?.start();
 
   await redis.connect();
 
@@ -64,6 +73,7 @@ const bootstrap = async (): Promise<void> => {
       logger.warn({ inFlight }, 'Shutdown timeout — forcing close with in-flight requests');
     }
 
+    sqsConsumer?.stop();
     await wsService.close();
     await AppDataSource.destroy();
     await redis.quit();
