@@ -3,7 +3,6 @@ import Router from '@koa/router';
 import cors from '@koa/cors';
 import bodyParser from 'koa-bodyparser';
 import helmet from 'koa-helmet';
-import { koaSwagger } from 'koa2-swagger-ui';
 import swaggerJsdoc from 'swagger-jsdoc';
 
 import { correlationId } from './core/middleware/correlationId';
@@ -56,7 +55,49 @@ export const createApp = (): Koa => {
     apis: [`${__dirname}/modules/**/routes/**/*.${__filename.endsWith('.ts') ? 'ts' : 'js'}`],
   });
 
-  app.use(koaSwagger({ routePrefix: '/', swaggerOptions: { spec: swaggerSpec as Record<string, unknown> } }));
+  // Serve OpenAPI spec and Swagger UI — using direct handlers rather than
+  // koa2-swagger-ui whose Handlebars template generates broken JS for swagger-ui v5
+  // (elision in plugins array, wrong .default preset access).
+  const SWAGGER_VERSION = '5.18.2';
+  const swaggerHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Project Management Platform API</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/${SWAGGER_VERSION}/swagger-ui.css">
+  <style>body { margin: 0; }</style>
+</head>
+<body>
+<div id="swagger-ui"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/${SWAGGER_VERSION}/swagger-ui-bundle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/${SWAGGER_VERSION}/swagger-ui-standalone-preset.js"></script>
+<script>
+window.onload = () => {
+  SwaggerUIBundle({
+    url: '/spec.json',
+    dom_id: '#swagger-ui',
+    deepLinking: true,
+    presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+    plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+    layout: 'StandaloneLayout',
+  });
+};
+</script>
+</body>
+</html>`;
+
+  app.use(async (ctx, next) => {
+    if (ctx.path === '/spec.json') {
+      ctx.body = swaggerSpec;
+      return;
+    }
+    if (ctx.path === '/') {
+      ctx.type = 'text/html';
+      ctx.body = swaggerHtml;
+      return;
+    }
+    await next();
+  });
 
   const apiRouter = new Router({ prefix: '/api/v1' });
   apiRouter.use(authRouter.routes());
