@@ -78,7 +78,7 @@
     },
     {
       "key": "projectKey",
-      "value": "DEMO",
+      "value": "",
       "type": "string"
     }
   ],
@@ -361,10 +361,11 @@
               "listen": "prerequest",
               "script": {
                 "exec": [
-                  "// Auto-generate a unique key only if projectKey is empty or still an",
-                  "// auto-generated key (DEMO + 5 digits). A user-specified key is kept as-is.",
+                  "// Auto-generate a unique key only if projectKey is empty, the bare 'DEMO'",
+                  "// placeholder, or a previously auto-generated DEMO+5-digit key.",
+                  "// A user-specified key (anything else) is preserved as-is.",
                   "const existing = pm.collectionVariables.get(\"projectKey\");",
-                  "const isAutoKey = !existing || /^DEMO\\d{5}$/.test(existing);",
+                  "const isAutoKey = !existing || existing === 'DEMO' || /^DEMO\\d{5}$/.test(existing);",
                   "if (isAutoKey) {",
                   "  const suffix = Date.now().toString().slice(-5);",
                   "  pm.collectionVariables.set(\"projectKey\", \"DEMO\" + suffix);",
