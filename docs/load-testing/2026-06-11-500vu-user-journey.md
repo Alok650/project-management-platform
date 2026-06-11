@@ -312,7 +312,84 @@ This is expected behaviour for a 500-VU stress test on a 1-OCPU VM — the fixes
 
 ---
 
-## 11. Fixes Applied (post-test)
+## 11. Run 3 Results (after all fixes deployed)
+
+Run 3 was executed from a local machine against the hosted endpoint (`https://140-245-216-53.sslip.io`) after deploying two additional fixes: the `IssueKeyGenerator` transaction fix (`838c79b`) and the `CommentService` mention-resolution fix (`728482e`). Network latency (~10–50 ms/request from local → VM) is a minor additive factor in the latency numbers compared to Runs 1 and 2 which ran on the VM directly.
+
+### 11.1 Thresholds
+
+| Threshold | Actual | Limit | Status |
+|-----------|--------|-------|--------|
+| `http_req_failed` rate | **0%** | < 2% | ✅ PASSED |
+| `journey_error_rate` | **0%** | < 5% | ✅ PASSED |
+| `step_duration_ms p(95)` | 4,873 ms | < 1,000 ms | ❌ FAILED (hardware ceiling) |
+
+### 11.2 Traffic
+
+| Metric | Value |
+|--------|-------|
+| Total requests | 22,647 |
+| Request rate | 114.9 req/s |
+| Completed journeys | 3,774 |
+| Checks passed | 45,288 / 45,288 |
+| Checks failed | **0** |
+| Data received | 45 MB |
+
+### 11.3 Per-Step Results
+
+| Step | Passes | Fails | Success Rate |
+|------|-------:|------:|:------------:|
+| 1 — View board | 3,774 | 0 | ✅ 100% |
+| 2 — Open issue detail | 3,774 | 0 | ✅ 100% |
+| 3 — Create issue | **3,774** | **0** | ✅ **100%** |
+| 4 — Transition status | 3,774 | 0 | ✅ 100% |
+| 5 — Add comment | 3,774 | 0 | ✅ 100% |
+| 6 — Search | 3,774 | 0 | ✅ 100% |
+
+Every VU completed all 6 steps without a single failure.
+
+### 11.4 Latency (Run 3)
+
+| Percentile | Duration |
+|------------|----------|
+| avg | 3,325 ms |
+| median | 3,352 ms |
+| p90 | 4,565 ms |
+| p95 | 4,873 ms |
+| max | 9,866 ms |
+
+### 11.5 Three-Run Progression
+
+| Metric | Run 1 | Run 2 | Run 3 | Trend |
+|--------|------:|------:|------:|-------|
+| `http_req_failed` | 41.4% | 11.8% | **0%** | ✅ resolved |
+| `journey_error_rate` | 41.4% | 11.8% | **0%** | ✅ resolved |
+| Create issue success | 18.8% | 42.8% | **100%** | ✅ resolved |
+| Search success | 0% | 100% | **100%** | ✅ resolved |
+| `step_duration p(95)` | 3,055 ms | 4,374 ms | 4,873 ms | hardware ceiling |
+| Total iterations | 8,392 | 6,718 | 3,774† | — |
+
+† Run 3 completed fewer total iterations because higher latency per request (network + more work per transaction) means each VU completes fewer journey loops in 3 minutes — not a regression in correctness.
+
+### 11.6 What changed between Run 2 and Run 3
+
+**Fix: IssueKeyGenerator — same-connection transaction (`838c79b`)**
+
+Run 2 still had 57.2% create failures because the `LAST_INSERT_ID(expr)` pattern was applied but the two queries still ran on different pool connections. `AppDataSource.query()` acquires and releases a connection per call — `SELECT LAST_INSERT_ID()` on a different connection returns 0 or another VU's value, causing duplicate key violations (`UQ_issues_key`). Wrapping both queries in `AppDataSource.transaction()` guarantees they share a single connection, making `LAST_INSERT_ID()` connection-local and therefore safe under high concurrency.
+
+**Fix: CommentService — mention handles resolved to UUIDs (`728482e`)**
+
+`MentionParser.extract()` returns display-name strings (e.g. `['admin']`). `NotificationService` was passing these directly as `user_id` to the notifications table, causing FK violations against `users.id` (UUID). `UserRepository.resolveHandles()` performs a case-insensitive lookup and `CommentService.create()` now awaits it before publishing `CommentAddedEvent`. This eliminated the 18,129 FK errors observed in the SQS consumer during Run 2.
+
+### 11.7 Remaining bottleneck — latency on 1-OCPU VM
+
+Error rates are resolved. The only failing threshold is `step_duration_ms p(95) < 1,000 ms`. At 500 concurrent VUs all writing to a single MySQL instance on a 1-OCPU VM, each write transaction queues behind others. InnoDB can handle ~200–400 write transactions per second on this hardware; at 500 VUs each firing creates, transitions, and comments in rapid succession, individual requests wait 3–5 seconds for a DB connection slot.
+
+This is expected for a 10× stress test (the script's native VU count is 50). Options to close the latency gap: horizontal scaling (multiple app replicas + a separate DB VM), upgrading to 2+ OCPU, or switching to a managed database service.
+
+---
+
+## 12. Fixes Applied (post-test)
 
 ### Fix 1 — IssueKeyGenerator: eliminate the TOCTOU race (`src/modules/issues/IssueKeyGenerator.ts`)
 
