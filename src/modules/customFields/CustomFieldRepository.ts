@@ -22,6 +22,8 @@ export class CustomFieldRepository {
   }
 
   async deleteDefinition(id: string): Promise<void> {
+    // Delete values first — FK is RESTRICT, not CASCADE
+    await this.valueRepo.delete({ fieldDefinitionId: id });
     await this.defRepo.delete({ id });
   }
 
