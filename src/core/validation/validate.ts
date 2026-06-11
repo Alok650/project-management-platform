@@ -12,7 +12,7 @@ type Target = 'body' | 'query' | 'params';
 export const validate = (schema: Joi.ObjectSchema, target: Target = 'body'): Middleware =>
   async (ctx: Context, next) => {
     const source = target === 'body' ? ctx.request.body : target === 'query' ? ctx.query : ctx.params;
-    const { error, value } = schema.validate(source, { abortEarly: false, stripUnknown: true });
+    const { error, value } = schema.validate(source, { abortEarly: false, stripUnknown: true, convert: false });
     if (error) {
       const fields = Object.fromEntries(
         error.details.map((d) => [d.path.join('.'), d.message]),
