@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "pmp-api-collection-v1",
     "name": "Project Management Platform API",
-    "description": "Complete API collection for the Project Management Platform.\n\n## Quick start\n1. Import this collection and the companion environment file.\n2. Set `baseUrl` (default `http://localhost:3000`) and `testPassword`.\n3. Run **Auth → Register** then **Auth → Login** — the token is saved automatically.\n4. Run **Projects → Create Project** — `projectId` is saved automatically.\n5. Work through folders in order; most IDs are captured by test scripts.\n\n## Variable chain\n`accessToken` ← Login  \n`projectId` ← Create Project  \n`sprintId` ← Create Sprint  \n`issueId`, `issueVersion` ← Create Issue  \n`statusId` ← Get Board (first IN_PROGRESS column)  \n`commentId` ← Create Comment",
+    "description": "Complete API collection for the Project Management Platform.\n\n## Quick start\n1. Import this collection and the companion environment file.\n2. Set `baseUrl` (default `http://localhost:3000`) and `testPassword`.\n3. Run **Auth → Register** then **Auth → Login** — the token is saved automatically.\n4. Run **Projects → Create Project** — `projectId` is saved automatically.\n5. Work through folders in order; most IDs are captured by test scripts.\n\n## Variable chain\n`accessToken` ← Login  \n`projectId` ← Create Project  \n`sprintId` ← Create Sprint  \n`issueId`, `issueVersion` ← Create Issue  \n`statusId` ← Get Board (first IN_PROGRESS column)  \n`commentId` ← Create Comment  \n`fieldId` ← Create Custom Field Definition  \n`memberId` ← manually set to a second user's UUID for member tests",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -21,7 +21,9 @@
     { "key": "issueId",       "value": "",   "type": "string" },
     { "key": "issueVersion",  "value": "1",  "type": "string" },
     { "key": "statusId",      "value": "",   "type": "string" },
-    { "key": "commentId",     "value": "",   "type": "string" }
+    { "key": "commentId",     "value": "",   "type": "string" },
+    { "key": "fieldId",       "value": "",   "type": "string" },
+    { "key": "memberId",      "value": "",   "type": "string" }
   ],
   "item": [
 
@@ -241,7 +243,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "projects"]
             },
-            "description": "Creates a project and saves `projectId`."
+            "description": "Creates a project and saves `projectId`. The creator is automatically added as ADMIN."
           }
         },
         {
@@ -383,6 +385,88 @@
           }
         },
         {
+          "name": "Add Member",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 — member added', () => pm.response.to.have.status(201));",
+                  "pm.test('Member has userId and role', () => {",
+                  "  const m = pm.response.json().data;",
+                  "  pm.expect(m).to.have.property('userId');",
+                  "  pm.expect(m).to.have.property('role');",
+                  "  pm.collectionVariables.set('memberId', m.userId);",
+                  "  console.log('memberId saved:', m.userId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{memberId}}\",\n  \"role\": \"MEMBER\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/members",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "projects", "{{projectId}}", "members"]
+            },
+            "description": "Requires ADMIN role. Set `memberId` variable to the UUID of a registered user before running. Valid roles: ADMIN, PROJECT_LEAD, MEMBER, VIEWER."
+          }
+        },
+        {
+          "name": "Remove Member",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204 — member removed', () => pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/members/{{memberId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "projects", "{{projectId}}", "members", "{{memberId}}"]
+            },
+            "description": "Requires ADMIN role. Uses `memberId` variable (the user's UUID)."
+          }
+        },
+        {
+          "name": "Delete Project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204 — project deleted', () => pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "projects", "{{projectId}}"]
+            },
+            "description": "Requires ADMIN role. Cascades to sprints, issues, comments, custom fields."
+          }
+        },
+        {
           "name": "Get Project — unauthenticated → 401",
           "event": [
             {
@@ -443,7 +527,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "projects", "{{projectId}}", "sprints"]
             },
-            "description": "Creates a sprint and saves `sprintId`."
+            "description": "Requires PROJECT_LEAD role. Creates a sprint and saves `sprintId`."
           }
         },
         {
@@ -527,7 +611,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "sprints", "{{sprintId}}", "start"]
             },
-            "description": "Acquires MySQL advisory lock before transitioning. Returns 409 if another sprint is active."
+            "description": "Acquires MySQL advisory lock before transitioning. Returns 409 if another sprint is already active."
           }
         },
         {
@@ -827,7 +911,6 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "const status = pm.response.status;",
                   "pm.test('Transition accepted (200) or WIP/hook blocked (422)', () => {",
                   "  pm.expect([200, 422]).to.include(pm.response.code);",
                   "});",
@@ -936,6 +1019,29 @@
               "path": ["api", "v1", "issues", "{{issueId}}", "watchers"]
             }
           }
+        },
+        {
+          "name": "Delete Issue",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204 — issue deleted', () => pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "issues", "{{issueId}}"]
+            },
+            "description": "Deletes the issue and its comments, watchers, and custom field values."
+          }
         }
       ]
     },
@@ -968,7 +1074,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"content\": \"@admin looks good! The login flow is solid. 🎉\"\n}",
+              "raw": "{\n  \"content\": \"@admin looks good! The login flow is solid.\"\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": {
@@ -976,7 +1082,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "issues", "{{issueId}}", "comments"]
             },
-            "description": "MentionParser extracts @usernames and saves them. Triggers CommentAdded event → notification."
+            "description": "MentionParser extracts @usernames and resolves them to UUIDs. Triggers CommentAdded event → notification."
           }
         },
         {
@@ -1324,7 +1430,7 @@
           }
         },
         {
-          "name": "List Activity — filter by actorId + cursor pagination",
+          "name": "List Activity — cursor pagination",
           "event": [
             {
               "listen": "test",
@@ -1373,7 +1479,276 @@
     },
 
     {
-      "name": "8. Health & Metrics",
+      "name": "8. Custom Fields",
+      "description": "Custom field definitions are scoped to a project (PROJECT_LEAD+ to mutate, VIEWER+ to read). Values are set per issue. Supported types: TEXT (max 5000 chars), NUMBER (finite), DROPDOWN (must match options), DATE (ISO 8601).",
+      "item": [
+        {
+          "name": "List Field Definitions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('data is array', () => {",
+                  "  pm.expect(pm.response.json().data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/custom-fields",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "projects", "{{projectId}}", "custom-fields"]
+            },
+            "description": "Requires VIEWER+ role. Returns definitions ordered by position, then createdAt."
+          }
+        },
+        {
+          "name": "Create Field Definition",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Field created with correct type', () => {",
+                  "  const f = pm.response.json().data;",
+                  "  pm.expect(f).to.have.property('id');",
+                  "  pm.expect(f.type).to.eql('DROPDOWN');",
+                  "  pm.collectionVariables.set('fieldId', f.id);",
+                  "  console.log('fieldId saved:', f.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Priority Tier\",\n  \"type\": \"DROPDOWN\",\n  \"options\": [\"P0\", \"P1\", \"P2\", \"P3\"],\n  \"required\": false,\n  \"position\": 0\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/custom-fields",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "projects", "{{projectId}}", "custom-fields"]
+            },
+            "description": "Requires PROJECT_LEAD+ role. Saves `fieldId`. DROPDOWN requires `options` array. Other types: TEXT, NUMBER, DATE."
+          }
+        },
+        {
+          "name": "Create Field — invalid type → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 — invalid type', () => pm.response.to.have.status(400));",
+                  "pm.test('VALIDATION_ERROR', () => {",
+                  "  pm.expect(pm.response.json().error.code).to.eql('VALIDATION_ERROR');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bad Type\",\n  \"type\": \"CHECKBOX\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/custom-fields",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "projects", "{{projectId}}", "custom-fields"]
+            }
+          }
+        },
+        {
+          "name": "Update Field Definition",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Name updated', () => {",
+                  "  pm.expect(pm.response.json().data.name).to.eql('Severity');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Severity\",\n  \"options\": [\"Critical\", \"High\", \"Medium\", \"Low\"]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/custom-fields/{{fieldId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "projects", "{{projectId}}", "custom-fields", "{{fieldId}}"]
+            },
+            "description": "Requires PROJECT_LEAD+ role. Can update name, options, required, position. Type cannot be changed."
+          }
+        },
+        {
+          "name": "Delete Field Definition",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204 — field deleted', () => pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/custom-fields/{{fieldId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "projects", "{{projectId}}", "custom-fields", "{{fieldId}}"]
+            },
+            "description": "Requires PROJECT_LEAD+ role. Cascades: deletes all values for this field across all issues."
+          }
+        },
+        {
+          "name": "List Issue Field Values",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('data is array', () => {",
+                  "  pm.expect(pm.response.json().data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}/fields",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "issues", "{{issueId}}", "fields"]
+            },
+            "description": "Returns all custom field values set on this issue, including the field definition via relation."
+          }
+        },
+        {
+          "name": "Set Field Value",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 — value set', () => pm.response.to.have.status(200));",
+                  "pm.test('Value matches', () => {",
+                  "  pm.expect(pm.response.json().data.value).to.eql('P1');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"value\": \"P1\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}/fields/{{fieldId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "issues", "{{issueId}}", "fields", "{{fieldId}}"]
+            },
+            "description": "Upsert — creates or updates the value. Validates against field type (DROPDOWN: must be in options; NUMBER: must be finite; DATE: must be ISO 8601)."
+          }
+        },
+        {
+          "name": "Set Field Value — invalid DROPDOWN value → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 — invalid value', () => pm.response.to.have.status(400));",
+                  "pm.test('VALIDATION_ERROR with value field', () => {",
+                  "  const err = pm.response.json().error;",
+                  "  pm.expect(err.code).to.eql('VALIDATION_ERROR');",
+                  "  pm.expect(err.details?.fields?.value).to.include('Must be one of');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"value\": \"P9\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}/fields/{{fieldId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "issues", "{{issueId}}", "fields", "{{fieldId}}"]
+            }
+          }
+        },
+        {
+          "name": "Clear Field Value",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204 — value cleared', () => pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}/fields/{{fieldId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "issues", "{{issueId}}", "fields", "{{fieldId}}"]
+            },
+            "description": "Removes the value for this field on this issue. The field definition is not affected."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "9. Health & Metrics",
       "item": [
         {
           "name": "Liveness — GET /api/health/live",
@@ -1469,7 +1844,7 @@
     },
 
     {
-      "name": "9. Error & Auth Edge Cases",
+      "name": "10. Error & Auth Edge Cases",
       "item": [
         {
           "name": "Any endpoint — no Bearer token → 401",
