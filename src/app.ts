@@ -18,6 +18,7 @@ import { activityRouter } from './modules/activity/routes/v1/activityRoutes';
 import { issueRouter } from './modules/issues/routes/v1/issueRoutes';
 import { commentRouter } from './modules/comments/routes/v1/commentRoutes';
 import { searchRouter } from './modules/search/routes/v1/searchRoutes';
+import { customFieldRouter } from './modules/customFields/routes/v1/customFieldRoutes';
 
 /** Factory function — creates and configures the Koa application instance */
 export const createApp = (): Koa => {
@@ -113,6 +114,8 @@ window.onload = () => {
   apiRouter.use(commentRouter.allowedMethods());
   apiRouter.use(searchRouter.routes());
   apiRouter.use(searchRouter.allowedMethods());
+  apiRouter.use(customFieldRouter.routes());
+  apiRouter.use(customFieldRouter.allowedMethods());
 
   app.use(apiRouter.routes());
   app.use(apiRouter.allowedMethods());
