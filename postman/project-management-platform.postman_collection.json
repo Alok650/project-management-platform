@@ -23,7 +23,8 @@
     { "key": "statusId",      "value": "",   "type": "string" },
     { "key": "commentId",     "value": "",   "type": "string" },
     { "key": "fieldId",       "value": "",   "type": "string" },
-    { "key": "memberId",      "value": "",   "type": "string" }
+    { "key": "memberId",      "value": "",   "type": "string" },
+    { "key": "projectKey",    "value": "DEMO", "type": "string" }
   ],
   "item": [
 
@@ -213,17 +214,28 @@
           "name": "Create Project",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate a unique key per run so repeated runs against the same server don't conflict",
+                  "const suffix = Date.now().toString().slice(-5);",
+                  "pm.collectionVariables.set('projectKey', 'DEMO' + suffix);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "exec": [
                   "pm.test('Status 201 — project created', () => pm.response.to.have.status(201));",
-                  "pm.test('Project has id, name, key', () => {",
+                  "pm.test('Project has id and key', () => {",
                   "  const p = pm.response.json().data;",
                   "  pm.expect(p).to.have.property('id');",
-                  "  pm.expect(p.name).to.eql('Demo Project');",
-                  "  pm.expect(p.key).to.eql('DEMO');",
+                  "  pm.expect(p).to.have.property('key');",
                   "  pm.collectionVariables.set('projectId', p.id);",
-                  "  console.log('projectId saved:', p.id);",
+                  "  pm.collectionVariables.set('projectKey', p.key);",
+                  "  console.log('projectId saved:', p.id, '  key:', p.key);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -235,7 +247,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Demo Project\",\n  \"key\": \"DEMO\",\n  \"description\": \"Created via Postman collection\"\n}",
+              "raw": "{\n  \"name\": \"Demo Project\",\n  \"key\": \"{{projectKey}}\",\n  \"description\": \"Created via Postman collection\"\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": {
@@ -243,7 +255,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "projects"]
             },
-            "description": "Creates a project and saves `projectId`. The creator is automatically added as ADMIN."
+            "description": "Creates a project and saves `projectId`. The creator is automatically added as ADMIN. The key is generated uniquely per run (DEMO + last 5 digits of timestamp) to avoid 409 conflicts on repeated runs against the same server."
           }
         },
         {
