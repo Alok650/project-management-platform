@@ -400,6 +400,19 @@
           "name": "Add Member",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const memberId = pm.collectionVariables.get('memberId');",
+                  "if (!memberId || memberId.trim() === '') {",
+                  "  console.warn('Skipping Add Member — set memberId variable to a registered user UUID first');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "exec": [
@@ -436,6 +449,19 @@
           "name": "Remove Member",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const memberId = pm.collectionVariables.get('memberId');",
+                  "if (!memberId || memberId.trim() === '') {",
+                  "  console.warn('Skipping Remove Member — memberId not set');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "exec": [
@@ -453,29 +479,6 @@
               "path": ["api", "v1", "projects", "{{projectId}}", "members", "{{memberId}}"]
             },
             "description": "Requires ADMIN role. Uses `memberId` variable (the user's UUID)."
-          }
-        },
-        {
-          "name": "Delete Project",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 204 — project deleted', () => pm.response.to.have.status(204));"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}"]
-            },
-            "description": "Requires ADMIN role. Cascades to sprints, issues, comments, custom fields."
           }
         },
         {
@@ -1031,29 +1034,6 @@
               "path": ["api", "v1", "issues", "{{issueId}}", "watchers"]
             }
           }
-        },
-        {
-          "name": "Delete Issue",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 204 — issue deleted', () => pm.response.to.have.status(204));"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "issues", "{{issueId}}"]
-            },
-            "description": "Deletes the issue and its comments, watchers, and custom field values."
-          }
         }
       ]
     },
@@ -1608,7 +1588,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Severity\",\n  \"options\": [\"Critical\", \"High\", \"Medium\", \"Low\"]\n}",
+              "raw": "{\n  \"name\": \"Severity\"\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": {
@@ -1617,29 +1597,6 @@
               "path": ["api", "v1", "projects", "{{projectId}}", "custom-fields", "{{fieldId}}"]
             },
             "description": "Requires PROJECT_LEAD+ role. Can update name, options, required, position. Type cannot be changed."
-          }
-        },
-        {
-          "name": "Delete Field Definition",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 204 — field deleted', () => pm.response.to.have.status(204));"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/custom-fields/{{fieldId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "custom-fields", "{{fieldId}}"]
-            },
-            "description": "Requires PROJECT_LEAD+ role. Cascades: deletes all values for this field across all issues."
           }
         },
         {
@@ -1755,6 +1712,29 @@
             },
             "description": "Removes the value for this field on this issue. The field definition is not affected."
           }
+        },
+        {
+          "name": "Delete Field Definition",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204 — field deleted', () => pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/custom-fields/{{fieldId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "projects", "{{projectId}}", "custom-fields", "{{fieldId}}"]
+            },
+            "description": "Requires PROJECT_LEAD+ role. Cascades: deletes all values for this field across all issues. Run last so value operations above can use the field."
+          }
         }
       ]
     },
@@ -1856,7 +1836,60 @@
     },
 
     {
-      "name": "10. Error & Auth Edge Cases",
+      "name": "10. Cleanup",
+      "description": "Run these LAST. Both requests destroy data that earlier sections depend on — running them earlier will cascade-delete sprints, issues, comments, and custom fields, causing all downstream requests to fail.",
+      "item": [
+        {
+          "name": "Delete Issue",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204 — issue deleted', () => pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "issues", "{{issueId}}"]
+            },
+            "description": "Deletes the issue and its comments, watchers, and custom field values. Run after all comment and custom-field tests."
+          }
+        },
+        {
+          "name": "Delete Project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204 — project deleted', () => pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "projects", "{{projectId}}"]
+            },
+            "description": "Requires ADMIN role. Cascades to sprints, issues, comments, custom fields. Run last."
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "11. Error & Auth Edge Cases",
       "item": [
         {
           "name": "Any endpoint — no Bearer token → 401",
