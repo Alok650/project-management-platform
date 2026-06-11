@@ -2,32 +2,87 @@
   "info": {
     "_postman_id": "pmp-api-collection-v1",
     "name": "Project Management Platform API",
-    "description": "Complete API collection for the Project Management Platform.\n\n## Quick start\n1. Import this collection and the companion environment file.\n2. Set `baseUrl` (default `http://localhost:3000`) and `testPassword`.\n3. Run **Auth → Register** then **Auth → Login** — the token is saved automatically.\n4. Run **Projects → Create Project** — `projectId` is saved automatically.\n5. Work through folders in order; most IDs are captured by test scripts.\n\n## Variable chain\n`accessToken` ← Login  \n`projectId` ← Create Project  \n`sprintId` ← Create Sprint  \n`issueId`, `issueVersion` ← Create Issue  \n`statusId` ← Get Board (first IN_PROGRESS column)  \n`commentId` ← Create Comment  \n`fieldId` ← Create Custom Field Definition  \n`memberId` ← manually set to a second user's UUID for member tests",
+    "description": "Complete API collection for the Project Management Platform.\n\n## Quick start\n1. Import this collection and the companion environment file.\n2. Set `baseUrl` (default `http://localhost:3000`) and `testPassword`.\n3. Run **Auth \u2192 Register** then **Auth \u2192 Login** \u2014 the token is saved automatically.\n4. Run **Projects \u2192 Create Project** \u2014 `projectId` is saved automatically.\n5. Work through folders in order; most IDs are captured by test scripts.\n\n## Variable chain\n`accessToken` \u2190 Login  \n`projectId` \u2190 Create Project  \n`sprintId` \u2190 Create Sprint  \n`issueId`, `issueVersion` \u2190 Create Issue  \n`statusId` \u2190 Get Board (first IN_PROGRESS column)  \n`commentId` \u2190 Create Comment  \n`fieldId` \u2190 Create Custom Field Definition  \n`memberId` \u2190 manually set to a second user's UUID for member tests",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
     "type": "bearer",
     "bearer": [
-      { "key": "token", "value": "{{accessToken}}", "type": "string" }
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
     ]
   },
   "variable": [
-    { "key": "baseUrl",       "value": "http://localhost:3000", "type": "string" },
-    { "key": "accessToken",   "value": "",   "type": "string" },
-    { "key": "testEmail",     "value": "demo@example.com", "type": "string" },
-    { "key": "testPassword",  "value": "password123!",     "type": "string" },
-    { "key": "projectId",     "value": "",   "type": "string" },
-    { "key": "sprintId",      "value": "",   "type": "string" },
-    { "key": "issueId",       "value": "",   "type": "string" },
-    { "key": "issueVersion",  "value": "1",  "type": "string" },
-    { "key": "statusId",      "value": "",   "type": "string" },
-    { "key": "commentId",     "value": "",   "type": "string" },
-    { "key": "fieldId",       "value": "",   "type": "string" },
-    { "key": "memberId",      "value": "",   "type": "string" },
-    { "key": "projectKey",    "value": "DEMO", "type": "string" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testEmail",
+      "value": "demo@example.com",
+      "type": "string"
+    },
+    {
+      "key": "testPassword",
+      "value": "password123!",
+      "type": "string"
+    },
+    {
+      "key": "projectId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sprintId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "issueId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "issueVersion",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "statusId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "commentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fieldId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "memberId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "projectKey",
+      "value": "DEMO",
+      "type": "string"
+    }
   ],
   "item": [
-
     {
       "name": "1. Auth",
       "item": [
@@ -38,7 +93,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 201 — user created', () => pm.response.to.have.status(201));",
+                  "pm.test('Status 201 \u2014 user created', () => pm.response.to.have.status(201));",
                   "pm.test('Response has data.id', () => {",
                   "  const body = pm.response.json();",
                   "  pm.expect(body.data).to.have.property('id');",
@@ -50,30 +105,48 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"displayName\": \"Demo User\",\n  \"password\": \"{{testPassword}}\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "register"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
             },
-            "description": "Create a new user account. `displayName` must be 2–100 chars, `password` min 8 chars."
+            "description": "Create a new user account. `displayName` must be 2\u2013100 chars, `password` min 8 chars."
           }
         },
         {
-          "name": "Register — duplicate email → 409",
+          "name": "Register \u2014 duplicate email \u2192 409",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 409 — conflict', () => pm.response.to.have.status(409));",
+                  "pm.test('Status 409 \u2014 conflict', () => pm.response.to.have.status(409));",
                   "pm.test('Error code is CONFLICT', () => {",
                   "  pm.expect(pm.response.json().error.code).to.eql('CONFLICT');",
                   "});"
@@ -83,29 +156,47 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"displayName\": \"Demo User\",\n  \"password\": \"{{testPassword}}\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "register"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
             }
           }
         },
         {
-          "name": "Register — validation error → 400",
+          "name": "Register \u2014 validation error \u2192 400",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 — validation error', () => pm.response.to.have.status(400));",
+                  "pm.test('Status 400 \u2014 validation error', () => pm.response.to.have.status(400));",
                   "pm.test('Error code is VALIDATION_ERROR', () => {",
                   "  pm.expect(pm.response.json().error.code).to.eql('VALIDATION_ERROR');",
                   "});"
@@ -115,18 +206,36 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"not-an-email\",\n  \"displayName\": \"X\",\n  \"password\": \"short\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "register"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
             }
           }
         },
@@ -137,7 +246,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 — login success', () => pm.response.to.have.status(200));",
+                  "pm.test('Status 200 \u2014 login success', () => pm.response.to.have.status(200));",
                   "pm.test('Response has accessToken', () => {",
                   "  const body = pm.response.json();",
                   "  pm.expect(body.data).to.have.property('accessToken');",
@@ -156,30 +265,48 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
             },
             "description": "Authenticates and saves `accessToken` to collection variables."
           }
         },
         {
-          "name": "Login — wrong password → 401",
+          "name": "Login \u2014 wrong password \u2192 401",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 401 — unauthorized', () => pm.response.to.have.status(401));",
+                  "pm.test('Status 401 \u2014 unauthorized', () => pm.response.to.have.status(401));",
                   "pm.test('Error code is UNAUTHORIZED', () => {",
                   "  pm.expect(pm.response.json().error.code).to.eql('UNAUTHORIZED');",
                   "});"
@@ -189,24 +316,41 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"wrong-password\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
             }
           }
         }
       ]
     },
-
     {
       "name": "2. Projects",
       "item": [
@@ -217,9 +361,14 @@
               "listen": "prerequest",
               "script": {
                 "exec": [
-                  "// Generate a unique key per run so repeated runs against the same server don't conflict",
-                  "const suffix = Date.now().toString().slice(-5);",
-                  "pm.collectionVariables.set('projectKey', 'DEMO' + suffix);"
+                  "// Auto-generate a unique key only if projectKey is empty or still an",
+                  "// auto-generated key (DEMO + 5 digits). A user-specified key is kept as-is.",
+                  "const existing = pm.collectionVariables.get(\"projectKey\");",
+                  "const isAutoKey = !existing || /^DEMO\\d{5}$/.test(existing);",
+                  "if (isAutoKey) {",
+                  "  const suffix = Date.now().toString().slice(-5);",
+                  "  pm.collectionVariables.set(\"projectKey\", \"DEMO\" + suffix);",
+                  "}"
                 ],
                 "type": "text/javascript"
               }
@@ -228,7 +377,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 201 — project created', () => pm.response.to.have.status(201));",
+                  "pm.test('Status 201 \u2014 project created', () => pm.response.to.have.status(201));",
                   "pm.test('Project has id and key', () => {",
                   "  const p = pm.response.json().data;",
                   "  pm.expect(p).to.have.property('id');",
@@ -244,22 +393,37 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Demo Project\",\n  \"key\": \"{{projectKey}}\",\n  \"description\": \"Created via Postman collection\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects"
+              ]
             },
             "description": "Creates a project and saves `projectId`. The creator is automatically added as ADMIN. The key is generated uniquely per run (DEMO + last 5 digits of timestamp) to avoid 409 conflicts on repeated runs against the same server."
           }
         },
         {
-          "name": "Create Project — missing key → 400",
+          "name": "Create Project \u2014 missing key \u2192 400",
           "event": [
             {
               "listen": "test",
@@ -276,16 +440,31 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Missing Key Project\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects"
+              ]
             }
           }
         },
@@ -309,8 +488,14 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects"
+              ]
             }
           }
         },
@@ -335,8 +520,15 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}"
+              ]
             }
           }
         },
@@ -358,16 +550,32 @@
           ],
           "request": {
             "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Demo Project (Updated)\",\n  \"description\": \"Updated via Postman\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}"
+              ]
             }
           }
         },
@@ -391,8 +599,16 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/members",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "members"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "members"
+              ]
             }
           }
         },
@@ -405,7 +621,7 @@
                 "exec": [
                   "const memberId = pm.collectionVariables.get('memberId');",
                   "if (!memberId || memberId.trim() === '') {",
-                  "  console.warn('Skipping Add Member — set memberId variable to a registered user UUID first');",
+                  "  console.warn('Skipping Add Member \u2014 set memberId variable to a registered user UUID first');",
                   "  pm.execution.skipRequest();",
                   "}"
                 ],
@@ -416,7 +632,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 201 — member added', () => pm.response.to.have.status(201));",
+                  "pm.test('Status 201 \u2014 member added', () => pm.response.to.have.status(201));",
                   "pm.test('Member has userId and role', () => {",
                   "  const m = pm.response.json().data;",
                   "  pm.expect(m).to.have.property('userId');",
@@ -431,16 +647,33 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"userId\": \"{{memberId}}\",\n  \"role\": \"MEMBER\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/members",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "members"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "members"
+              ]
             },
             "description": "Requires ADMIN role. Set `memberId` variable to the UUID of a registered user before running. Valid roles: ADMIN, PROJECT_LEAD, MEMBER, VIEWER."
           }
@@ -454,7 +687,7 @@
                 "exec": [
                   "const memberId = pm.collectionVariables.get('memberId');",
                   "if (!memberId || memberId.trim() === '') {",
-                  "  console.warn('Skipping Remove Member — memberId not set');",
+                  "  console.warn('Skipping Remove Member \u2014 memberId not set');",
                   "  pm.execution.skipRequest();",
                   "}"
                 ],
@@ -465,7 +698,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 204 — member removed', () => pm.response.to.have.status(204));"
+                  "pm.test('Status 204 \u2014 member removed', () => pm.response.to.have.status(204));"
                 ],
                 "type": "text/javascript"
               }
@@ -475,14 +708,23 @@
             "method": "DELETE",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/members/{{memberId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "members", "{{memberId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "members",
+                "{{memberId}}"
+              ]
             },
             "description": "Requires ADMIN role. Uses `memberId` variable (the user's UUID)."
           }
         },
         {
-          "name": "Get Project — unauthenticated → 401",
+          "name": "Get Project \u2014 unauthenticated \u2192 401",
           "event": [
             {
               "listen": "test",
@@ -495,18 +737,26 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}"
+              ]
             }
           }
         }
       ]
     },
-
     {
       "name": "3. Sprints",
       "item": [
@@ -531,22 +781,39 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Sprint 1\",\n  \"goal\": \"Ship the core CRUD flows\",\n  \"startDate\": \"2026-06-15\",\n  \"endDate\": \"2026-06-28\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/sprints",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "sprints"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "sprints"
+              ]
             },
             "description": "Requires PROJECT_LEAD role. Creates a sprint and saves `sprintId`."
           }
         },
         {
-          "name": "Create Sprint — missing name → 400",
+          "name": "Create Sprint \u2014 missing name \u2192 400",
           "event": [
             {
               "listen": "test",
@@ -563,16 +830,33 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/sprints",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "sprints"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "sprints"
+              ]
             }
           }
         },
@@ -596,8 +880,16 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/sprints",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "sprints"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "sprints"
+              ]
             }
           }
         },
@@ -619,12 +911,33 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{}", "options": { "raw": { "language": "json" } } },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{baseUrl}}/api/v1/sprints/{{sprintId}}/start",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "sprints", "{{sprintId}}", "start"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sprints",
+                "{{sprintId}}",
+                "start"
+              ]
             },
             "description": "Acquires MySQL advisory lock before transitioning. Returns 409 if another sprint is already active."
           }
@@ -649,23 +962,39 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"carryOverIssueIds\": []\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/sprints/{{sprintId}}/complete",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "sprints", "{{sprintId}}", "complete"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sprints",
+                "{{sprintId}}",
+                "complete"
+              ]
             },
             "description": "Velocity is computed as sum of storyPoints on DONE issues. Unfinished issues can be moved to `nextSprintId`."
           }
         }
       ]
     },
-
     {
       "name": "4. Issues",
       "item": [
@@ -693,28 +1022,45 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"type\": \"STORY\",\n  \"title\": \"As a user I can log in via email\",\n  \"description\": \"Implement the login flow with JWT tokens\",\n  \"priority\": \"HIGH\",\n  \"storyPoints\": 5,\n  \"labels\": [\"auth\", \"backend\"]\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/issues",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "issues"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "issues"
+              ]
             },
             "description": "Saves `issueId` and `issueVersion` for subsequent PATCH/transition requests."
           }
         },
         {
-          "name": "Create Issue — missing title → 400",
+          "name": "Create Issue \u2014 missing title \u2192 400",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 — validation error', () => pm.response.to.have.status(400));",
+                  "pm.test('Status 400 \u2014 validation error', () => pm.response.to.have.status(400));",
                   "pm.test('VALIDATION_ERROR code', () => {",
                   "  pm.expect(pm.response.json().error.code).to.eql('VALIDATION_ERROR');",
                   "});"
@@ -725,27 +1071,44 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"type\": \"TASK\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/issues",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "issues"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "issues"
+              ]
             }
           }
         },
         {
-          "name": "Create Issue — invalid type → 400",
+          "name": "Create Issue \u2014 invalid type \u2192 400",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 — invalid enum', () => pm.response.to.have.status(400));"
+                  "pm.test('Status 400 \u2014 invalid enum', () => pm.response.to.have.status(400));"
                 ],
                 "type": "text/javascript"
               }
@@ -753,16 +1116,33 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"type\": \"IDEA\",\n  \"title\": \"Something\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/issues",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "issues"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "issues"
+              ]
             }
           }
         },
@@ -793,8 +1173,16 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/board",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "board"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "board"
+              ]
             },
             "description": "Returns cached board state. Saves `statusId` of the first IN_PROGRESS column for transitions."
           }
@@ -821,9 +1209,22 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/issues?limit=20",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "issues"],
-              "query": [{ "key": "limit", "value": "20" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "issues"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
             }
           }
         },
@@ -847,8 +1248,15 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "issues", "{{issueId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "issues",
+                "{{issueId}}"
+              ]
             }
           }
         },
@@ -873,22 +1281,38 @@
           ],
           "request": {
             "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"title\": \"Updated: As a user I can log in via email\",\n  \"storyPoints\": 8,\n  \"version\": {{issueVersion}}\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "issues", "{{issueId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "issues",
+                "{{issueId}}"
+              ]
             },
             "description": "Requires `version` for optimistic locking. Returns 409 if version is stale."
           }
         },
         {
-          "name": "Update Issue — missing version → 400",
+          "name": "Update Issue \u2014 missing version \u2192 400",
           "event": [
             {
               "listen": "test",
@@ -906,16 +1330,32 @@
           ],
           "request": {
             "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"title\": \"Missing version\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "issues", "{{issueId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "issues",
+                "{{issueId}}"
+              ]
             }
           }
         },
@@ -946,22 +1386,39 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"toStatusId\": \"{{statusId}}\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}/transitions",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "issues", "{{issueId}}", "transitions"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "issues",
+                "{{issueId}}",
+                "transitions"
+              ]
             },
             "description": "Runs validation hooks (WIP limit, required fields). Returns 422 if blocked, 409 if transition is not allowed."
           }
         },
         {
-          "name": "Transition Issue — missing toStatusId → 400",
+          "name": "Transition Issue \u2014 missing toStatusId \u2192 400",
           "event": [
             {
               "listen": "test",
@@ -975,16 +1432,33 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}/transitions",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "issues", "{{issueId}}", "transitions"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "issues",
+                "{{issueId}}",
+                "transitions"
+              ]
             }
           }
         },
@@ -1003,14 +1477,35 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{}", "options": { "raw": { "language": "json" } } },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}/watchers",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "issues", "{{issueId}}", "watchers"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "issues",
+                "{{issueId}}",
+                "watchers"
+              ]
             },
-            "description": "Subscribes the authenticated user; idempotent — re-watching does not error."
+            "description": "Subscribes the authenticated user; idempotent \u2014 re-watching does not error."
           }
         },
         {
@@ -1030,14 +1525,21 @@
             "method": "DELETE",
             "url": {
               "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}/watchers",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "issues", "{{issueId}}", "watchers"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "issues",
+                "{{issueId}}",
+                "watchers"
+              ]
             }
           }
         }
       ]
     },
-
     {
       "name": "5. Comments",
       "item": [
@@ -1063,18 +1565,35 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"content\": \"@admin looks good! The login flow is solid.\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}/comments",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "issues", "{{issueId}}", "comments"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "issues",
+                "{{issueId}}",
+                "comments"
+              ]
             },
-            "description": "MentionParser extracts @usernames and resolves them to UUIDs. Triggers CommentAdded event → notification."
+            "description": "MentionParser extracts @usernames and resolves them to UUIDs. Triggers CommentAdded event \u2192 notification."
           }
         },
         {
@@ -1096,21 +1615,38 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"content\": \"Agreed, shipping it today.\",\n  \"parentId\": \"{{commentId}}\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}/comments",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "issues", "{{issueId}}", "comments"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "issues",
+                "{{issueId}}",
+                "comments"
+              ]
             }
           }
         },
         {
-          "name": "Create Comment — missing content → 400",
+          "name": "Create Comment \u2014 missing content \u2192 400",
           "event": [
             {
               "listen": "test",
@@ -1127,16 +1663,33 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}/comments",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "issues", "{{issueId}}", "comments"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "issues",
+                "{{issueId}}",
+                "comments"
+              ]
             }
           }
         },
@@ -1162,8 +1715,16 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}/comments",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "issues", "{{issueId}}", "comments"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "issues",
+                "{{issueId}}",
+                "comments"
+              ]
             }
           }
         },
@@ -1185,16 +1746,32 @@
           ],
           "request": {
             "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"content\": \"Updated: looks great, shipping it now!\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/comments/{{commentId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "comments", "{{commentId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "comments",
+                "{{commentId}}"
+              ]
             },
             "description": "Only the original author can update. Returns 403 for other users."
           }
@@ -1216,15 +1793,21 @@
             "method": "DELETE",
             "url": {
               "raw": "{{baseUrl}}/api/v1/comments/{{commentId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "comments", "{{commentId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "comments",
+                "{{commentId}}"
+              ]
             },
             "description": "Soft-delete. Only the original author can delete."
           }
         }
       ]
     },
-
     {
       "name": "6. Search",
       "item": [
@@ -1250,9 +1833,22 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/search?q=login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "search"],
-              "query": [{ "key": "q", "value": "login" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "login"
+                }
+              ]
             },
             "description": "FULLTEXT search across issue titles and descriptions. Default `type=ISSUE`."
           }
@@ -1274,12 +1870,29 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/search?q=auth&issueType=STORY&limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "search"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "search"
+              ],
               "query": [
-                { "key": "q",          "value": "auth"  },
-                { "key": "issueType",  "value": "STORY" },
-                { "key": "limit",      "value": "10"    }
+                {
+                  "key": "q",
+                  "value": "auth"
+                },
+                {
+                  "key": "issueType",
+                  "value": "STORY"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
               ]
             }
           }
@@ -1304,18 +1917,32 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/search?q=great&type=COMMENT",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "search"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "search"
+              ],
               "query": [
-                { "key": "q",    "value": "great"   },
-                { "key": "type", "value": "COMMENT" }
+                {
+                  "key": "q",
+                  "value": "great"
+                },
+                {
+                  "key": "type",
+                  "value": "COMMENT"
+                }
               ]
             },
             "description": "Searches comment content instead of issue titles. FULLTEXT index on comments.content."
           }
         },
         {
-          "name": "Search — missing q → 400",
+          "name": "Search \u2014 missing q \u2192 400",
           "event": [
             {
               "listen": "test",
@@ -1331,19 +1958,27 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/search",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "search"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "search"
+              ]
             }
           }
         },
         {
-          "name": "Search — q too short (1 char) → 400",
+          "name": "Search \u2014 q too short (1 char) \u2192 400",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 — query too short', () => pm.response.to.have.status(400));"
+                  "pm.test('Status 400 \u2014 query too short', () => pm.response.to.have.status(400));"
                 ],
                 "type": "text/javascript"
               }
@@ -1353,15 +1988,27 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/search?q=a",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "search"],
-              "query": [{ "key": "q", "value": "a" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "a"
+                }
+              ]
             }
           }
         }
       ]
     },
-
     {
       "name": "7. Activity",
       "item": [
@@ -1388,14 +2035,22 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/activity",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "activity"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "activity"
+              ]
             },
             "description": "Returns events from the domain event pipeline: CREATED, STATUS_CHANGED, COMMENTED, SPRINT_STARTED, SPRINT_COMPLETED."
           }
         },
         {
-          "name": "List Activity — filter by entityType",
+          "name": "List Activity \u2014 filter by entityType",
           "event": [
             {
               "listen": "test",
@@ -1415,14 +2070,27 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/activity?entityType=ISSUE",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "activity"],
-              "query": [{ "key": "entityType", "value": "ISSUE" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "activity"
+              ],
+              "query": [
+                {
+                  "key": "entityType",
+                  "value": "ISSUE"
+                }
+              ]
             }
           }
         },
         {
-          "name": "List Activity — cursor pagination",
+          "name": "List Activity \u2014 cursor pagination",
           "event": [
             {
               "listen": "test",
@@ -1438,14 +2106,27 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/activity?limit=5",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "activity"],
-              "query": [{ "key": "limit", "value": "5" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "activity"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
             }
           }
         },
         {
-          "name": "Activity — unauthenticated → 401",
+          "name": "Activity \u2014 unauthenticated \u2192 401",
           "event": [
             {
               "listen": "test",
@@ -1458,18 +2139,27 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/activity",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "activity"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "activity"
+              ]
             }
           }
         }
       ]
     },
-
     {
       "name": "8. Custom Fields",
       "description": "Custom field definitions are scoped to a project (PROJECT_LEAD+ to mutate, VIEWER+ to read). Values are set per issue. Supported types: TEXT (max 5000 chars), NUMBER (finite), DROPDOWN (must match options), DATE (ISO 8601).",
@@ -1494,8 +2184,16 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/custom-fields",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "custom-fields"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "custom-fields"
+              ]
             },
             "description": "Requires VIEWER+ role. Returns definitions ordered by position, then createdAt."
           }
@@ -1522,28 +2220,45 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Priority Tier\",\n  \"type\": \"DROPDOWN\",\n  \"options\": [\"P0\", \"P1\", \"P2\", \"P3\"],\n  \"required\": false,\n  \"position\": 0\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/custom-fields",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "custom-fields"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "custom-fields"
+              ]
             },
             "description": "Requires PROJECT_LEAD+ role. Saves `fieldId`. DROPDOWN requires `options` array. Other types: TEXT, NUMBER, DATE."
           }
         },
         {
-          "name": "Create Field — invalid type → 400",
+          "name": "Create Field \u2014 invalid type \u2192 400",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 — invalid type', () => pm.response.to.have.status(400));",
+                  "pm.test('Status 400 \u2014 invalid type', () => pm.response.to.have.status(400));",
                   "pm.test('VALIDATION_ERROR', () => {",
                   "  pm.expect(pm.response.json().error.code).to.eql('VALIDATION_ERROR');",
                   "});"
@@ -1554,16 +2269,33 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Bad Type\",\n  \"type\": \"CHECKBOX\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/custom-fields",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "custom-fields"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "custom-fields"
+              ]
             }
           }
         },
@@ -1585,16 +2317,34 @@
           ],
           "request": {
             "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Severity\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/custom-fields/{{fieldId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "custom-fields", "{{fieldId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "custom-fields",
+                "{{fieldId}}"
+              ]
             },
             "description": "Requires PROJECT_LEAD+ role. Can update name, options, required, position. Type cannot be changed."
           }
@@ -1619,8 +2369,16 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}/fields",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "issues", "{{issueId}}", "fields"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "issues",
+                "{{issueId}}",
+                "fields"
+              ]
             },
             "description": "Returns all custom field values set on this issue, including the field definition via relation."
           }
@@ -1632,7 +2390,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 200 — value set', () => pm.response.to.have.status(200));",
+                  "pm.test('Status 200 \u2014 value set', () => pm.response.to.have.status(200));",
                   "pm.test('Value matches', () => {",
                   "  pm.expect(pm.response.json().data.value).to.eql('P1');",
                   "});"
@@ -1643,28 +2401,46 @@
           ],
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"value\": \"P1\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}/fields/{{fieldId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "issues", "{{issueId}}", "fields", "{{fieldId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "issues",
+                "{{issueId}}",
+                "fields",
+                "{{fieldId}}"
+              ]
             },
-            "description": "Upsert — creates or updates the value. Validates against field type (DROPDOWN: must be in options; NUMBER: must be finite; DATE: must be ISO 8601)."
+            "description": "Upsert \u2014 creates or updates the value. Validates against field type (DROPDOWN: must be in options; NUMBER: must be finite; DATE: must be ISO 8601)."
           }
         },
         {
-          "name": "Set Field Value — invalid DROPDOWN value → 400",
+          "name": "Set Field Value \u2014 invalid DROPDOWN value \u2192 400",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 — invalid value', () => pm.response.to.have.status(400));",
+                  "pm.test('Status 400 \u2014 invalid value', () => pm.response.to.have.status(400));",
                   "pm.test('VALIDATION_ERROR with value field', () => {",
                   "  const err = pm.response.json().error;",
                   "  pm.expect(err.code).to.eql('VALIDATION_ERROR');",
@@ -1677,16 +2453,34 @@
           ],
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"value\": \"P9\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}/fields/{{fieldId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "issues", "{{issueId}}", "fields", "{{fieldId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "issues",
+                "{{issueId}}",
+                "fields",
+                "{{fieldId}}"
+              ]
             }
           }
         },
@@ -1697,7 +2491,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 204 — value cleared', () => pm.response.to.have.status(204));"
+                  "pm.test('Status 204 \u2014 value cleared', () => pm.response.to.have.status(204));"
                 ],
                 "type": "text/javascript"
               }
@@ -1707,8 +2501,17 @@
             "method": "DELETE",
             "url": {
               "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}/fields/{{fieldId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "issues", "{{issueId}}", "fields", "{{fieldId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "issues",
+                "{{issueId}}",
+                "fields",
+                "{{fieldId}}"
+              ]
             },
             "description": "Removes the value for this field on this issue. The field definition is not affected."
           }
@@ -1720,7 +2523,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 204 — field deleted', () => pm.response.to.have.status(204));"
+                  "pm.test('Status 204 \u2014 field deleted', () => pm.response.to.have.status(204));"
                 ],
                 "type": "text/javascript"
               }
@@ -1730,20 +2533,28 @@
             "method": "DELETE",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}/custom-fields/{{fieldId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}", "custom-fields", "{{fieldId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}",
+                "custom-fields",
+                "{{fieldId}}"
+              ]
             },
             "description": "Requires PROJECT_LEAD+ role. Cascades: deletes all values for this field across all issues. Run last so value operations above can use the field."
           }
         }
       ]
     },
-
     {
       "name": "9. Health & Metrics",
       "item": [
         {
-          "name": "Liveness — GET /api/health/live",
+          "name": "Liveness \u2014 GET /api/health/live",
           "event": [
             {
               "listen": "test",
@@ -1759,18 +2570,26 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/health/live",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "health", "live"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health",
+                "live"
+              ]
             },
             "description": "Always 200 if the Node process is alive (Kubernetes liveness probe)."
           }
         },
         {
-          "name": "Readiness — GET /api/health/ready",
+          "name": "Readiness \u2014 GET /api/health/ready",
           "event": [
             {
               "listen": "test",
@@ -1792,18 +2611,26 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/health/ready",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "health", "ready"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health",
+                "ready"
+              ]
             },
             "description": "Checks DB (SELECT 1) and Redis (PING). Returns `checks: {database, redis}` with ok/error per dependency."
           }
         },
         {
-          "name": "Metrics — GET /metrics",
+          "name": "Metrics \u2014 GET /metrics",
           "event": [
             {
               "listen": "test",
@@ -1822,22 +2649,27 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/metrics",
-              "host": ["{{baseUrl}}"],
-              "path": ["metrics"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "metrics"
+              ]
             },
             "description": "Prometheus text exposition format. Scraped by your Prometheus instance."
           }
         }
       ]
     },
-
     {
       "name": "10. Cleanup",
-      "description": "Run these LAST. Both requests destroy data that earlier sections depend on — running them earlier will cascade-delete sprints, issues, comments, and custom fields, causing all downstream requests to fail.",
+      "description": "Run these LAST. Both requests destroy data that earlier sections depend on \u2014 running them earlier will cascade-delete sprints, issues, comments, and custom fields, causing all downstream requests to fail.",
       "item": [
         {
           "name": "Delete Issue",
@@ -1846,7 +2678,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 204 — issue deleted', () => pm.response.to.have.status(204));"
+                  "pm.test('Status 204 \u2014 issue deleted', () => pm.response.to.have.status(204));"
                 ],
                 "type": "text/javascript"
               }
@@ -1856,8 +2688,15 @@
             "method": "DELETE",
             "url": {
               "raw": "{{baseUrl}}/api/v1/issues/{{issueId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "issues", "{{issueId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "issues",
+                "{{issueId}}"
+              ]
             },
             "description": "Deletes the issue and its comments, watchers, and custom field values. Run after all comment and custom-field tests."
           }
@@ -1869,7 +2708,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 204 — project deleted', () => pm.response.to.have.status(204));"
+                  "pm.test('Status 204 \u2014 project deleted', () => pm.response.to.have.status(204));"
                 ],
                 "type": "text/javascript"
               }
@@ -1879,20 +2718,26 @@
             "method": "DELETE",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/{{projectId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "{{projectId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "{{projectId}}"
+              ]
             },
             "description": "Requires ADMIN role. Cascades to sprints, issues, comments, custom fields. Run last."
           }
         }
       ]
     },
-
     {
       "name": "11. Error & Auth Edge Cases",
       "item": [
         {
-          "name": "Any endpoint — no Bearer token → 401",
+          "name": "Any endpoint \u2014 no Bearer token \u2192 401",
           "event": [
             {
               "listen": "test",
@@ -1911,17 +2756,25 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects"
+              ]
             }
           }
         },
         {
-          "name": "RBAC — non-member access project → 403",
+          "name": "RBAC \u2014 non-member access project \u2192 403",
           "event": [
             {
               "listen": "test",
@@ -1940,14 +2793,21 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects/00000000-0000-0000-0000-000000000000",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects", "00000000-0000-0000-0000-000000000000"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                "00000000-0000-0000-0000-000000000000"
+              ]
             },
-            "description": "Uses a non-existent project UUID — user has no membership, RBAC returns 403."
+            "description": "Uses a non-existent project UUID \u2014 user has no membership, RBAC returns 403."
           }
         },
         {
-          "name": "Rate limiter — intentional burst (429 expected after 100 req/min)",
+          "name": "Rate limiter \u2014 intentional burst (429 expected after 100 req/min)",
           "event": [
             {
               "listen": "test",
@@ -1970,14 +2830,19 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/v1/projects",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "projects"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects"
+              ]
             },
             "description": "Send this request 100+ times in under 60s to trigger the Redis sliding-window rate limiter. Use the Collection Runner with iterations=150."
           }
         }
       ]
     }
-
   ]
 }
