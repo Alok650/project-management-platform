@@ -20,4 +20,10 @@ export class AuthController {
     const result = await manager.login(email, password);
     ctx.body = ok(result);
   }
+
+  /** POST /api/v1/auth/logout */
+  static async logout(ctx: Context): Promise<void> {
+    await manager.logout((ctx.state as any).jti, (ctx.state as any).exp);
+    ctx.status = 204;
+  }
 }

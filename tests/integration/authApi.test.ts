@@ -48,11 +48,13 @@ jest.mock('../../src/infrastructure/logger/Logger', () => ({
 // Mock the manager so no real bcrypt/DB work happens
 const mockRegister = jest.fn();
 const mockLogin    = jest.fn();
+const mockLogout   = jest.fn();
 
 jest.mock('../../src/modules/auth/AuthManager', () => ({
   AuthManager: jest.fn().mockImplementation(() => ({
     register: mockRegister,
     login:    mockLogin,
+    logout:   mockLogout,
   })),
 }));
 
@@ -69,9 +71,20 @@ jest.mock('../../src/core/events/DomainEventBus', () => ({
 // ── Imports (after mocks) ─────────────────────────────────────────────────────
 
 import request from 'supertest';
+import jwt from 'jsonwebtoken';
 import { createApp } from '../../src/app';
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
+
+const TEST_SECRET = 'supersecretkey_that_is_at_least_32chars!!';
+
+function makeToken(overrides: Record<string, unknown> = {}): string {
+  return jwt.sign(
+    { sub: 'user-uuid-1', email: 'alice@example.com', jti: 'test-jti-123', ...overrides },
+    TEST_SECRET,
+    { expiresIn: '1h' },
+  );
+}
 
 const VALID_USER = {
   id:          'user-uuid-1',
@@ -168,6 +181,52 @@ describe('Auth API — /api/v1/auth', () => {
       expect(res.status).toBe(400);
       expect(res.body.error.code).toBe('VALIDATION_ERROR');
       expect(mockLogin).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── POST /logout ────────────────────────────────────────────────────────────
+
+  describe('POST /api/v1/auth/logout', () => {
+    it('7. valid Bearer token → 204 No Content and calls manager.logout', async () => {
+      mockLogout.mockResolvedValue(undefined);
+      const token = makeToken();
+
+      const res = await request(app.callback())
+        .post('/api/v1/auth/logout')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(204);
+      expect(mockLogout).toHaveBeenCalledWith('test-jti-123', expect.any(Number));
+    });
+
+    it('8. no Authorization header → 401 Unauthorized', async () => {
+      const res = await request(app.callback())
+        .post('/api/v1/auth/logout');
+
+      expect(res.status).toBe(401);
+      expect(mockLogout).not.toHaveBeenCalled();
+    });
+
+    it('9. malformed/invalid token → 401 Unauthorized', async () => {
+      const res = await request(app.callback())
+        .post('/api/v1/auth/logout')
+        .set('Authorization', 'Bearer not.a.valid.token');
+
+      expect(res.status).toBe(401);
+      expect(mockLogout).not.toHaveBeenCalled();
+    });
+
+    it('10. revoked token → 401 Unauthorized', async () => {
+      const { redis } = jest.requireMock('../../src/config/redis');
+      redis.exists.mockResolvedValueOnce(1); // simulate revoked jti
+
+      const token = makeToken();
+      const res = await request(app.callback())
+        .post('/api/v1/auth/logout')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(401);
+      expect(mockLogout).not.toHaveBeenCalled();
     });
   });
 });

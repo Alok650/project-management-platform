@@ -31,5 +31,6 @@ export const authenticate: Middleware = async (ctx, next) => {
 
   ctx.state.user = { id: payload.sub, email: payload.email };
   (ctx.state as any).jti = payload.jti;
+  (ctx.state as any).exp = payload.exp;
   await next();
 };

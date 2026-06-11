@@ -19,4 +19,9 @@ export class AuthManager {
   login(email: string, password: string) {
     return this.authService.login(email, password);
   }
+
+  /** @see AuthService.logout */
+  logout(jti: string, exp: number) {
+    return this.authService.logout(jti, exp);
+  }
 }

@@ -73,9 +73,20 @@
  *                       type: object
  *       401:
  *         description: Invalid email or password
+ *
+ * /api/v1/auth/logout:
+ *   post:
+ *     summary: Revoke the current JWT (blacklists jti in Redis until token expiry)
+ *     tags: [Auth]
+ *     responses:
+ *       204:
+ *         description: Token revoked — subsequent requests with this token return 401
+ *       401:
+ *         description: Missing or invalid token
  */
 import Router from '@koa/router';
 import { AuthController } from '../../AuthController';
+import { authenticate } from '../../../../core/middleware/auth';
 import { validate } from '../../../../core/validation/validate';
 import { registerSchema, loginSchema } from '../../schemas/authSchemas';
 
@@ -83,3 +94,4 @@ export const authRouter = new Router({ prefix: '/auth' });
 
 authRouter.post('/register', validate(registerSchema), AuthController.register);
 authRouter.post('/login',    validate(loginSchema),    AuthController.login);
+authRouter.post('/logout',   authenticate,             AuthController.logout);

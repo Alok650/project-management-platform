@@ -52,6 +52,12 @@ jest.mock('bcryptjs', () => ({
   },
 }));
 
+const mockRedisSetex = jest.fn();
+
+jest.mock('../../../src/config/redis', () => ({
+  redis: { setex: (...args: unknown[]) => mockRedisSetex(...args) },
+}));
+
 const mockJwtSign   = jest.fn();
 const mockJwtVerify = jest.fn();
 
@@ -191,6 +197,39 @@ describe('AuthService', () => {
 
       expect(mockBcryptCompare).not.toHaveBeenCalled();
       expect(mockJwtSign).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── logout ───────────────────────────────────────────────────────────────────
+
+  describe('logout', () => {
+    it('blacklists jti in Redis with TTL equal to remaining token lifetime', async () => {
+      const now = Math.floor(Date.now() / 1000);
+      const jti = 'test-jti-uuid-abc';
+      const exp = now + 300;
+
+      mockRedisSetex.mockResolvedValue('OK');
+
+      await service.logout(jti, exp);
+
+      expect(mockRedisSetex).toHaveBeenCalledTimes(1);
+      const [key, ttl, value] = mockRedisSetex.mock.calls[0];
+      expect(key).toContain(jti);
+      expect(ttl).toBeGreaterThanOrEqual(1);
+      expect(ttl).toBeLessThanOrEqual(300);
+      expect(value).toBe('1');
+    });
+
+    it('uses minimum TTL of 1 second for already-expired tokens', async () => {
+      const jti = 'expired-jti';
+      const exp = Math.floor(Date.now() / 1000) - 60;
+
+      mockRedisSetex.mockResolvedValue('OK');
+
+      await service.logout(jti, exp);
+
+      const [, ttl] = mockRedisSetex.mock.calls[0];
+      expect(ttl).toBe(1);
     });
   });
 });

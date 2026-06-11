@@ -4,6 +4,8 @@ import type { StringValue } from 'ms';
 import { randomUUID } from 'crypto';
 import { omit } from 'lodash';
 import { UserRepository } from './UserRepository';
+import { redis } from '../../config/redis';
+import { CacheKeys } from '../../infrastructure/cache/CacheKeys';
 import { env } from '../../config/env';
 import { UnauthorizedError, ConflictError } from '../../core/errors/errors';
 import type { User } from '../../models/User';
@@ -47,5 +49,15 @@ export class AuthService {
     );
 
     return { accessToken, user: omit(user, ['passwordHash']) };
+  }
+
+  /**
+   * Revoke a JWT by blacklisting its jti in Redis until the token naturally expires.
+   * @param jti - Token ID claim from the JWT payload
+   * @param exp - Token expiry (Unix seconds) from the JWT payload
+   */
+  async logout(jti: string, exp: number): Promise<void> {
+    const ttl = Math.max(exp - Math.floor(Date.now() / 1000), 1);
+    await redis.setex(CacheKeys.jwtRevoked(jti), ttl, '1');
   }
 }
